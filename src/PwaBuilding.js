@@ -183,7 +183,6 @@ export class PwaBuilding extends LitElement {
   }
 
   render() {
-    let activeIndex = this.shadowRoot.querySelector('#myTabs')?this.shadowRoot.querySelector('#myTabs').activeIndex:1;
     return html`
       <main>
         <div id="app">
@@ -193,12 +192,13 @@ export class PwaBuilding extends LitElement {
             <mwc-tab label="Chat"></mwc-tab>
             <mwc-tab label="Body"></mwc-tab>
           </mwc-tab-bar>
-          <div id="chat_container" class=${activeIndex==0 ? 'oculto' : 'nooculto'}></div>
-          <form id="form" class=${activeIndex==0 ? 'oculto' : 'nooculto'}>
-            <textarea name="prompt" rows="1" cols="1" placeholder="${(activeIndex==1)?'Ask anything...':(activeIndex==2)?'Chat about anything...':'Ask about cells...'}"></textarea>
+          <div id="chat_container" class=${this.myLittleActiveIndex==0 ? 'oculto' : 'nooculto'}></div>
+          
+          <form id="form" class=${this.myLittleActiveIndex==0 ? 'oculto' : 'nooculto'}>
+            <textarea name="prompt" rows="1" cols="1" placeholder="${(this.myLittleActiveIndex==1)?'Ask anything...':(this.myLittleActiveIndex==2)?'Chat about anything...':'Ask about cells...'}"></textarea>
             <button type="submit"><img src="assets/send.svg" /></button>
           </form>
-          <div class=${activeIndex==0 ? 'nooculto helpContainer' : 'oculto helpContainer'}>
+          <div class=${this.myLittleActiveIndex==0 ? 'nooculto helpContainer' : 'oculto helpContainer'}>
             <p>Help</p>
             <p>Help</p>
             <p>Help</p>
@@ -218,8 +218,8 @@ export class PwaBuilding extends LitElement {
   chatStripe(isAi, value, uniqueId) {
     return (
         `
-        <div class="wrapper ${isAi && 'ai'}">
-            <div class="chat ${this.myLittleActiveIndex==0 ? 'oculto':'nocoulto'}">
+        <div class="${this.myLittleActiveIndex==0 ? 'oculto':'nooculto'} wrapper ${isAi && 'ai'}">
+            <div class="chat">
                 <div class="profile">
                     <img 
                       src=${isAi ? bot : user} 
