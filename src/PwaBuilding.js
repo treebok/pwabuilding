@@ -266,8 +266,8 @@ export class PwaBuilding extends LitElement {
         "lets call the server with this conversation: ",
         this.conversation
       );
-      //const response = await fetch("https://guandolo.onrender.com", {
-      response = await fetch("http://localhost:5000", {
+      //response = await fetch("http://localhost:5000", {
+      response = await fetch("https://guandolo.onrender.com", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
