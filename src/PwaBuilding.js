@@ -80,24 +80,6 @@ function generateUniqueId() {
   return `id-${timestamp}-${hexadecimalString}`;
 }
 
-function chatStripe(isAi, value, uniqueId) {
-  return (
-      `
-      <div class="wrapper ${isAi && 'ai'}">
-          <div class="chat">
-              <div class="profile">
-                  <img 
-                    src=${isAi ? bot : user} 
-                    alt="${isAi ? 'bot' : 'user'}" 
-                  />
-              </div>
-              <div class="message" id=${uniqueId}>${value}</div>
-          </div>
-      </div>
-  `
-  )
-}
-
 export class PwaBuilding extends LitElement {
   static get properties() {
     return {
@@ -105,6 +87,7 @@ export class PwaBuilding extends LitElement {
       form: { type: Object },
       chatContainer: { type: Object },
       conversation: { type: Array },
+      myLittleActiveIndex: { type: Number },
     };
   }
     
@@ -180,11 +163,12 @@ export class PwaBuilding extends LitElement {
     this.conversation = [
       {role: 'system', content: 'you are friendly assistant that speaks like a mexican'}
     ];
+    this.myLittleActiveIndex = 1;
   }
 
   firstUpdated() {
-    this.form = this.shadowRoot.getElementById('form');
-    this.chatContainer = this.shadowRoot.getElementById('chat_container');
+    this.form = this.shadowRoot.querySelector('#form');
+    this.chatContainer = this.shadowRoot.querySelector('#chat_container');
     this.form.addEventListener('submit', (e) => {this.handleSubmit(e)});
     this.form.addEventListener('keyup', (e) => {
       if (e.keyCode === 13) {
@@ -194,11 +178,12 @@ export class PwaBuilding extends LitElement {
   }
 
   _changePage(){
+    this.myLittleActiveIndex = this.shadowRoot.querySelector('#myTabs').activeIndex;
     this.requestUpdate();
   }
 
   render() {
-    let activeIndex = this.shadowRoot.getElementById('myTabs')?this.shadowRoot.getElementById('myTabs').activeIndex:1;
+    let activeIndex = this.shadowRoot.querySelector('#myTabs')?this.shadowRoot.querySelector('#myTabs').activeIndex:1;
     return html`
       <main>
         <div id="app">
@@ -229,15 +214,33 @@ export class PwaBuilding extends LitElement {
       </main>
     `;
   }
+  
+  chatStripe(isAi, value, uniqueId) {
+    return (
+        `
+        <div class="wrapper ${isAi && 'ai'}">
+            <div class="chat ${this.myLittleActiveIndex==0 ? 'oculto':'nocoulto'}">
+                <div class="profile">
+                    <img 
+                      src=${isAi ? bot : user} 
+                      alt="${isAi ? 'bot' : 'user'}" 
+                    />
+                </div>
+                <div class="message" id=${uniqueId}>${value}</div>
+            </div>
+        </div>
+    `
+    )
+  }
 
   async handleSubmit(e) {
     e.preventDefault()
     const data = new FormData(this.form);
 
-    let myLittleActiveIndex = this.shadowRoot.getElementById('myTabs').activeIndex;
+    //let myLittleActiveIndex = this.shadowRoot.querySelector('#myTabs').activeIndex;
 
     // user's chatstripe
-    this.chatContainer.innerHTML += chatStripe(false, data.get('prompt'))
+    this.chatContainer.innerHTML += this.chatStripe(false, data.get('prompt'))
 
     if (this.myLittleActiveIndex==2)
         this.conversation.push({role: 'user', content: data.get('prompt')})
@@ -247,7 +250,7 @@ export class PwaBuilding extends LitElement {
 
     // bot's chatstripe
     const uniqueId = generateUniqueId()
-    this.chatContainer.innerHTML += chatStripe(true, " ", uniqueId)
+    this.chatContainer.innerHTML += this.chatStripe(true, " ", uniqueId)
 
     // to focus scroll to the bottom 
     this.chatContainer.scrollTop = this.chatContainer.scrollHeight;
@@ -259,9 +262,9 @@ export class PwaBuilding extends LitElement {
     // messageDiv.innerHTML = "..."
     loader(messageDiv)
 
-    // let myLittleActiveIndex = this.shadowRoot.getElementById('myTabs').activeIndex;
     let response;
-    if(myLittleActiveIndex==2){
+    
+    if(this.myLittleActiveIndex==2){
       console.log(
         "lets call the server with this conversation: ",
         this.conversation
@@ -275,7 +278,7 @@ export class PwaBuilding extends LitElement {
         body: JSON.stringify({
           prompt:
             this.conversation,
-          taskId: myLittleActiveIndex,
+          taskId: this.myLittleActiveIndex,
         }),
       });
     } else {
@@ -292,7 +295,7 @@ export class PwaBuilding extends LitElement {
         body: JSON.stringify({
           prompt:
             data.get("prompt"),
-          taskId: myLittleActiveIndex,
+          taskId: this.myLittleActiveIndex,
         }),
       });
     }
